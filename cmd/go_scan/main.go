@@ -37,7 +37,7 @@ func main() {
 		go worker(ports, results)
 	}
 
-	portParse, err := tcp_scanner.Parse(os.Args[2])
+	portParse, err := go_scan.Parse(os.Args[2])
 	if err != nil {
 		log.Panicln(err)
 	}
