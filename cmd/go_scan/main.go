@@ -3,41 +3,48 @@ package main
 import (
 	"fmt"
 	"net"
+	"os"
+	"log"
 	"sort"
+
+	"github.com/goodlandsecurity/go_scan/go_scan"
 )
-
-
 
 func worker(ports, results chan int) {
 	for p := range ports {
-		address := fmt.Sprintf("127.0.0.1:%d", p)
+		host := os.Args[1]
+		address := fmt.Sprintf("%v:%d", host, p)
 		conn, err := net.Dial("tcp", address)
-		if err != nil{
+		if err != nil {
+			// if port is closed, send 0
 			results <- 0
 			continue
 		}
 		conn.Close()
+		// if port is opened, send port
 		results <- p
 	}
 }
 
 func main() {
 	ports := make(chan int, 100)
+	// create a separate channel to communicate the results from the worker to the main thread 
 	results := make(chan int)
+	// store the results in a slice to sort later
 	var openports []int
 
 	for i := 0; i < cap(ports); i++ {
 		go worker(ports, results)
 	}
 
-	go func() {
-		for i := 1; i <= 1024; i++ {
-			ports <- i
-		}
-	}()
+	portParse, err := tcp_scanner.Parse(os.Args[2])
+	if err != nil {
+		log.Panicln(err)
+	}
 
-	for i := 0; i < 1024; i++ {
-		port := <-results
+	for _, parsed := range portParse {
+		ports <- parsed
+		port := <- results
 		if port != 0 {
 			openports = append(openports, port)
 		}
@@ -45,8 +52,11 @@ func main() {
 
 	close(ports)
 	close(results)
+	// sort the slice of open ports
 	sort.Ints(openports)
+	// loop over the slice and print the open ports
 	for _, port := range openports {
 		fmt.Printf("%d open\n", port)
 	}
 }
+
