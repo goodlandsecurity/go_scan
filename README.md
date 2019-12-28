@@ -4,7 +4,9 @@ go_scan is a simple tcp scanner written in golang.
 **Author**: [th3jiv3r][twitter]
 
 ### New Features!
-  - go_scan takes arguments for host and port(s)
+  - go_scan uses flags for host and port(s)
+  - -host flag must be provided to run
+  - by default, if -port flag is not provided go_scan will use the top 20 most scanned ports
 
 ### Installation
 ```sh
@@ -14,9 +16,9 @@ $ go build goscan.go
 ```
 
 ### Example Use:  
-  - *goscan localhost 22*
-  - *goscan 10.0.0.1 22,80,443,3389*
-  - *goscan 192.168.0.1 1-65535*
+  - *goscan -host localhost*
+  - *goscan -host 10.0.0.1 -port 22,80*
+  - *goscan -host 192.168.0.1 -port 21-25,80,443-445,3389*
 
 #### License
   - GNU General Public License v3.0
