@@ -44,7 +44,7 @@ func main() {
 	// create a separate channel to communicate the results from the worker to the main thread 
 	results := make(chan int)
 	// store the results in a slice to sort later
-	var openports []int
+	var openPorts []int
 
 	for i := 0; i < cap(ports); i++ {
 		go worker(ports, results)
@@ -60,16 +60,16 @@ func main() {
 		ports <- parsed
 		port := <- results
 		if port != 0 {
-			openports = append(openports, port)
+			openPorts = append(openPorts, port)
 		}
 	}
 
 	close(ports)
 	close(results)
 	// sort the slice of open ports
-	sort.Ints(openports)
+	sort.Ints(openPorts)
 	// loop over the slice and print the open ports
-	for _, port := range openports {
+	for _, port := range openPorts {
 		fmt.Printf("%d open\n", port)
 	}
 }
