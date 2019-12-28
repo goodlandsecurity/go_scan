@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"net"
+	"flag"
 	"os"
 	"log"
 	"sort"
@@ -10,10 +11,21 @@ import (
 	"github.com/goodlandsecurity/go_scan/go_scan"
 )
 
+const (
+	top20 = "21-23,25,53,80,110-111,135,139,143,443,445,993,995,1723,3306,3389,5900,8080"
+)
+var (
+hostFlag = flag.String("host", "", "<-host> hostname or ip address")
+portFlag = flag.String("port", top20, "[-port] single port, range of ports, or mix of both")
+)
+
 func worker(ports, results chan int) {
 	for p := range ports {
-		host := os.Args[1]
-		address := fmt.Sprintf("%v:%d", host, p)
+		if *hostFlag == "" {
+			flag.PrintDefaults()
+			os.Exit(1)
+		}
+		address := fmt.Sprintf("%v:%d", *hostFlag, p)
 		conn, err := net.Dial("tcp", address)
 		if err != nil {
 			// if port is closed, send 0
@@ -27,6 +39,7 @@ func worker(ports, results chan int) {
 }
 
 func main() {
+	flag.Parse()
 	ports := make(chan int, 100)
 	// create a separate channel to communicate the results from the worker to the main thread 
 	results := make(chan int)
@@ -37,7 +50,10 @@ func main() {
 		go worker(ports, results)
 	}
 
-	portParse, err := go_scan.Parse(os.Args[2])
+	/*top20 := "21,22,23,25,53,80,110,111,135,139,143,443,445,993,995,1723,3306,3389,5900,8080"
+	portFlag := flag.String("port", top20, "[-port] 22 or 22,80 or 1-65535 ")*/
+	portParse, err := go_scan.Parse(*portFlag)
+
 	if err != nil {
 		log.Panicln(err)
 	}
