@@ -1,0 +1,10 @@
+# Under Development #
+#####################
+*.dev
+
+# OS Generated Files #
+######################
+.DS_Store
+.DS_Store?
+._*
+.idea
