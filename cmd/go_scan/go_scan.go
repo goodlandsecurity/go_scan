@@ -50,8 +50,6 @@ func main() {
 		go worker(ports, results)
 	}
 
-	/*top20 := "21,22,23,25,53,80,110,111,135,139,143,443,445,993,995,1723,3306,3389,5900,8080"
-	portFlag := flag.String("port", top20, "[-port] 22 or 22,80 or 1-65535 ")*/
 	portParse, err := go_scan.Parse(*portFlag)
 
 	if err != nil {
