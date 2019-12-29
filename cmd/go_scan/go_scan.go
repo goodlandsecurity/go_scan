@@ -1,16 +1,17 @@
 package main
 
 import (
-	"fmt"
-	"net"
 	"flag"
-	"os"
+	"fmt"
 	"log"
+	"net"
+	"os"
 	"sort"
 
 	"github.com/goodlandsecurity/go_scan/go_scan"
 )
 
+// default ports to be scanned if -port flag is not used
 const (
 	top20 = "21-23,25,53,80,110-111,135,139,143,443,445,993,995,1723,3306,3389,5900,8080"
 )
@@ -40,6 +41,7 @@ func worker(ports, results chan int) {
 
 func main() {
 	flag.Parse()
+	fmt.Printf("Starting scan of host %s...\n\n", *hostFlag)
 	ports := make(chan int, 100)
 	// create a separate channel to communicate the results from the worker to the main thread 
 	results := make(chan int)
@@ -68,9 +70,9 @@ func main() {
 	close(results)
 	// sort the slice of open ports
 	sort.Ints(openPorts)
-	// loop over the slice and print the open ports
+	// loop over the slice and print the open ports and the service running on the port
 	for _, port := range openPorts {
-		fmt.Printf("%d open\n", port)
+		service := go_scan.TCPServices[port]
+			fmt.Printf("%d open %s\n", port, service)
 	}
 }
-
