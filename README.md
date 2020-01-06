@@ -8,6 +8,7 @@ go_scan is a simple tcp scanner written in golang.
   - go_scan uses flags for host and port(s)
   - -host flag must be provided to run
   - by default, if -port flag is not provided go_scan will use the top 20 most scanned ports
+  - added better formatting for scan results and show warning message if no ports are empty.
 
 ### Installation
 ```sh
