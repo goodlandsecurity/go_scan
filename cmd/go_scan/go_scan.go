@@ -7,8 +7,11 @@ import (
 	"net"
 	"os"
 	"sort"
+	"text/tabwriter"
+	"time"
 
 	"github.com/goodlandsecurity/go_scan/go_scan"
+	"gopkg.in/gookit/color.v1"
 )
 
 // default ports to be scanned if -port flag is not used
@@ -16,8 +19,9 @@ const (
 	top20 = "21-23,25,53,80,110-111,135,139,143,443,445,993,995,1723,3306,3389,5900,8080"
 )
 var (
-hostFlag = flag.String("host", "", "<-host> hostname or ip address")
-portFlag = flag.String("port", top20, "[-port] single port, range of ports, or mix of both")
+	w = new(tabwriter.Writer)
+	hostFlag = flag.String("host", "", "<-host> hostname or ip address")
+	portFlag = flag.String("port", top20, "[-port] single port, range of ports, or mix of both")
 )
 
 func worker(ports, results chan int) {
@@ -34,14 +38,14 @@ func worker(ports, results chan int) {
 			continue
 		}
 		conn.Close()
-		// if port is opened, send port
+		// if port is open, send port
 		results <- p
 	}
 }
 
 func main() {
+	start := time.Now()
 	flag.Parse()
-	fmt.Printf("Starting scan of host %s...\n\n", *hostFlag)
 	ports := make(chan int, 100)
 	// create a separate channel to communicate the results from the worker to the main thread 
 	results := make(chan int)
@@ -51,6 +55,7 @@ func main() {
 	for i := 0; i < cap(ports); i++ {
 		go worker(ports, results)
 	}
+	fmt.Printf("Starting scan of host %s...\n\n", *hostFlag)
 
 	portParse, err := go_scan.Parse(*portFlag)
 
@@ -70,9 +75,20 @@ func main() {
 	close(results)
 	// sort the slice of open ports
 	sort.Ints(openPorts)
-	// loop over the slice and print the open ports and the service running on the port
-	for _, port := range openPorts {
-		service := go_scan.TCPServices[port]
-			fmt.Printf("%d open %s\n", port, service)
-	}
+
+	if len(openPorts) > 0 {
+                w.Init(os.Stdout, 0, 8, 2, '\t', 0)
+                fmt.Fprintf(w, "PORT\tSTATUS\tSERVICE\n____\t______\t_______\n")
+                w.Flush()
+                // loop over the slice and print the open ports and the service running on the port
+                for _, port := range openPorts {
+                        service := go_scan.TCPServices[port]
+                        fmt.Fprintf(w,"%v\topen\t%v\n", port, service)
+                        w.Flush()
+                }
+                elapsed := time.Since(start)
+                fmt.Printf("\nScan took %+v to complete!", elapsed)
+        } else {
+                color.Red.Println("No open ports!")
+        }
 }
